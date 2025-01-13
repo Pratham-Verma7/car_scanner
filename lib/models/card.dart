@@ -1,3 +1,4 @@
+// lib/models/business_card.dart
 class BusinessCard {
   final String name;
   final String company;
@@ -5,6 +6,9 @@ class BusinessCard {
   final String phone;
   final String address;
   final String website;
+  final String position;
+  final List<String> additionalPhones;
+  final List<String> additionalEmails;
 
   BusinessCard({
     this.name = '',
@@ -13,23 +17,147 @@ class BusinessCard {
     this.phone = '',
     this.address = '',
     this.website = '',
+    this.position = '',
+    this.additionalPhones = const [],
+    this.additionalEmails = const [],
   });
 
   factory BusinessCard.fromText(String text) {
-    final nameRegEx = RegExp(r'(?:Name:|^)[\s]*([A-Za-z\s\.]+)', caseSensitive: false);
-    final phoneRegEx = RegExp(r'(?:Phone|Tel|Mobile)[\s:]*([+\d\s\-()]+)', caseSensitive: false);
-    final emailRegEx = RegExp(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b');
-    final companyRegEx = RegExp(r'(?:Company|Organization)[\s:]*([A-Za-z0-9\s\.]+)', caseSensitive: false);
-    final websiteRegEx = RegExp(r'(?:www\.|http://|https://)?[a-zA-Z0-9]+\.[a-zA-Z]+(?:\.[a-zA-Z]+)*', caseSensitive: false);
-    final addressRegEx = RegExp(r'(?:Address|Location)[\s:]*([A-Za-z0-9\s\.,#-]+)', caseSensitive: false);
+    // Split text into lines for better processing
+    final lines = text.split('\n').map((line) => line.trim()).toList();
+
+    // Initialize variables to store extracted data
+    String name = '';
+    String company = '';
+    String position = '';
+    String address = '';
+    List<String> phones = [];
+    List<String> emails = [];
+    String website = '';
+
+    // Fixed and improved regular expressions
+    final namePatterns = [
+      RegExp(r'^[A-Z][A-Za-z\s\.-]{2,}$'),  // Matches capitalized names
+      RegExp(r'name[\s:]([A-Za-z\s\.-]+)', caseSensitive: false),  // Matches "Name: John Doe"
+      RegExp(r'([A-Z][a-z]+\s+[A-Z][a-z]+)'),  // Matches "John Doe" format
+    ];
+
+    final emailPattern = RegExp(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}');
+    final phonePattern = RegExp(r'[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}');
+    final websitePattern = RegExp(r'(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?', caseSensitive: false);
+    final positionPattern = RegExp(r'(director|manager|engineer|developer|coordinator|supervisor|officer|specialist|analyst|consultant)', caseSensitive: false);
+
+    bool isProcessingAddress = false;
+    List<String> addressLines = [];
+
+    // Process each line
+    for (String line in lines) {
+      line = line.trim();
+      if (line.isEmpty) continue;
+
+      // Try to find name
+      if (name.isEmpty) {
+        for (var pattern in namePatterns) {
+          final nameMatch = pattern.firstMatch(line);
+          if (nameMatch != null) {
+            // Get the name from the first capturing group if it exists, otherwise use the whole match
+            name = nameMatch.groupCount >= 1 ?
+            (nameMatch.group(1) ?? line).trim() :
+            nameMatch.group(0)?.trim() ?? '';
+            if (name.isNotEmpty) break;
+          }
+        }
+        if (name.isNotEmpty) continue;
+      }
+
+      // Find position/title
+      if (position.isEmpty && positionPattern.hasMatch(line)) {
+        position = line.trim();
+        continue;
+      }
+
+      // Find email addresses
+      final emailMatches = emailPattern.allMatches(line);
+      if (emailMatches.isNotEmpty) {
+        emails.addAll(
+            emailMatches
+                .map((m) => m.group(0) ?? '')
+                .where((email) => email.isNotEmpty)
+        );
+        continue;
+      }
+
+      // Find phone numbers
+      final phoneMatches = phonePattern.allMatches(line);
+      if (phoneMatches.isNotEmpty) {
+        phones.addAll(
+            phoneMatches
+                .map((m) => m.group(0) ?? '')
+                .where((phone) => phone.isNotEmpty)
+        );
+        continue;
+      }
+
+      // Find website
+      if (website.isEmpty) {
+        final websiteMatch = websitePattern.firstMatch(line);
+        if (websiteMatch != null) {
+          website = websiteMatch.group(0) ?? '';
+          continue;
+        }
+      }
+
+      // Process company name
+      if (company.isEmpty &&
+          !line.contains(RegExp(r'address|location|po box', caseSensitive: false)) &&
+          !phonePattern.hasMatch(line) &&
+          !emailPattern.hasMatch(line) &&
+          !websitePattern.hasMatch(line)) {
+        company = line.trim();
+        continue;
+      }
+
+      // Process address
+      if (line.contains(RegExp(r'address|location|po box', caseSensitive: false)) ||
+          isProcessingAddress) {
+        isProcessingAddress = true;
+        // Don't add the "Address:" label to the address
+        if (!line.contains(RegExp(r'address|location', caseSensitive: false))) {
+          addressLines.add(line);
+        }
+      }
+    }
+
+    // Clean up address
+    if (addressLines.isNotEmpty) {
+      address = addressLines.join(' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+    }
 
     return BusinessCard(
-      name: nameRegEx.firstMatch(text)?.group(1)?.trim() ?? '',
-      phone: phoneRegEx.firstMatch(text)?.group(1)?.trim() ?? '',
-      email: emailRegEx.firstMatch(text)?.group(0)?.trim() ?? '',
-      company: companyRegEx.firstMatch(text)?.group(1)?.trim() ?? '',
-      website: websiteRegEx.firstMatch(text)?.group(0)?.trim() ?? '',
-      address: addressRegEx.firstMatch(text)?.group(1)?.trim() ?? '',
+      name: name,
+      company: company,
+      position: position,
+      email: emails.isNotEmpty ? emails.first : '',
+      phone: phones.isNotEmpty ? phones.first : '',
+      address: address,
+      website: website,
+      additionalPhones: phones.length > 1 ? phones.sublist(1) : [],
+      additionalEmails: emails.length > 1 ? emails.sublist(1) : [],
     );
+  }
+
+  @override
+  String toString() {
+    return '''
+    Name: $name
+    Position: $position
+    Company: $company
+    Email: $email
+    Phone: $phone
+    Website: $website
+    Address: $address
+    Additional Phones: ${additionalPhones.join(', ')}
+    Additional Emails: ${additionalEmails.join(', ')}
+    ''';
   }
 }
