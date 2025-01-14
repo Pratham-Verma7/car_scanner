@@ -1,7 +1,15 @@
 import 'package:card_scanner/screens/camer_screen.dart';
 import 'package:flutter/material.dart';
 
-class ReportScreen extends StatelessWidget {
+import '../services/storage.dart';
+
+class ReportScreen extends StatefulWidget {
+  final StorageService storageService;
+  const ReportScreen({Key? key, required this.storageService}) : super(key: key);
+  @override
+  _ReportScreenState createState() => _ReportScreenState();
+}
+class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +47,7 @@ class ReportScreen extends StatelessWidget {
                     // Navigate directly to CameraScreen
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CameraScreen()),
+                      MaterialPageRoute(builder: (context) => CameraScreen(storageService: widget.storageService)),
                     );
                   },
                 ),

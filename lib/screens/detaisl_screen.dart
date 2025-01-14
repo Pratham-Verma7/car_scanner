@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'dart:io';
-
 import '../models/card.dart';
+import '../services/storage.dart';
+
 
 class DetailsScreen extends StatelessWidget {
   final BusinessCard businessCard;
   final File imageFile;
+  final bool isFromHistory;
+  final StorageService storageService;
 
   const DetailsScreen({
     Key? key,
     required this.businessCard,
     required this.imageFile,
+    this.isFromHistory = false,
+    required this.storageService,
   }) : super(key: key);
 
   @override
@@ -20,6 +24,25 @@ class DetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Business Card Details'),
+        actions: [
+           //if (!isFromHistory)
+            IconButton(
+              icon: Icon(Icons.save),
+              onPressed: () async {
+                try {
+                  await storageService.saveBusinessCard(businessCard, imageFile);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Business card saved successfully')),
+                  );
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to save business card')),
+                  );
+                }
+              },
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

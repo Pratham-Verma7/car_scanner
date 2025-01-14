@@ -2,21 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 
 import '../services/camer_service.dart';
+import '../services/storage.dart';
 import '../services/text_reco.dart';
 import '../widegts/camera_overlays.dart';
 import 'detaisl_screen.dart';
 
 class CameraScreen extends StatefulWidget {
+  final StorageService storageService;
+
+  const CameraScreen({
+    Key? key,
+    required this.storageService,
+  }) : super(key: key);
+
   @override
   _CameraScreenState createState() => _CameraScreenState();
 }
-
 class _CameraScreenState extends State<CameraScreen> {
   final CameraService _cameraService = CameraService();
   final TextRecognitionService _textRecognitionService =
       TextRecognitionService();
   bool _isLoading = false;
-
   @override
   void initState() {
     super.initState();
@@ -49,6 +55,8 @@ class _CameraScreenState extends State<CameraScreen> {
             builder: (context) => DetailsScreen(
               businessCard: businessCard,
               imageFile: imageFile,
+              isFromHistory: true,
+              storageService: widget.storageService,
             ),
           ),
         );

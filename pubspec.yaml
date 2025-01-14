@@ -42,7 +42,10 @@ dependencies:
   image_cropper: ^3.0.1 # To crop the image
   cropper: ^0.5.3
   path_provider: ^2.0.11 # To save files temporarily
-
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.6
 dev_dependencies:
   flutter_test:
     sdk: flutter
