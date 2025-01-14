@@ -1,3 +1,4 @@
+import 'package:card_scanner/screens/SavedDetailsScreen.dart';
 import 'package:card_scanner/screens/report.dart';
 import 'package:flutter/material.dart';
 
@@ -69,6 +70,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             onPressed: () {
               // Your logic for the right icon button
+              // Navigate to Save Screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SavedDetailsScreen()),
+              );
             },
           ),
         ],

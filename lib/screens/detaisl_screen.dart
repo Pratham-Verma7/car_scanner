@@ -1,7 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:card_scanner/screens/SavedDetailsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
 import '../models/card.dart';
 
 class DetailsScreen extends StatefulWidget {
@@ -57,14 +59,29 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   Future<void> _saveDetails() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('name', nameController.text);
-    await prefs.setString('position', positionController.text);
-    await prefs.setString('company', companyController.text);
-    await prefs.setString('email', emailController.text);
-    await prefs.setString('phone', phoneController.text);
-    await prefs.setString('website', websiteController.text);
-    await prefs.setString('address', addressController.text);
 
+    // Create a map to store the current details and image path
+    Map<String, String> cardDetails = {
+      'name': nameController.text,
+      'position': positionController.text,
+      'company': companyController.text,
+      'email': emailController.text,
+      'phone': phoneController.text,
+      'website': websiteController.text,
+      'address': addressController.text,
+      'imagePath': widget.imageFile.path,
+    };
+
+    // Retrieve the existing history from SharedPreferences
+    List<String> history = prefs.getStringList('businessCardHistory') ?? [];
+
+    // Add the current card details to the history
+    history.add(jsonEncode(cardDetails));
+
+    // Save the updated history back to SharedPreferences
+    await prefs.setStringList('businessCardHistory', history);
+
+    // Navigate to the history page
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => SavedDetailsScreen()),
@@ -102,7 +119,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 ),
               ),
               minLines: 1,
-              maxLines: null, // Expands to fit the content
+              maxLines: null,
             ),
           ],
         ),
@@ -117,20 +134,46 @@ class _DetailsScreenState extends State<DetailsScreen> {
         title: Text('Business Card Details'),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildEditableCard('Name', nameController),
-              _buildEditableCard('Position', positionController),
-              _buildEditableCard('Company', companyController),
-              _buildEditableCard('Email', emailController),
-              _buildEditableCard('Phone', phoneController),
-              _buildEditableCard('Website', websiteController),
-              _buildEditableCard('Address', addressController),
-            ],
-          ),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 200,
+              margin: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  widget.imageFile,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildEditableCard('Name', nameController),
+                  _buildEditableCard('Position', positionController),
+                  _buildEditableCard('Company', companyController),
+                  _buildEditableCard('Email', emailController),
+                  _buildEditableCard('Phone', phoneController),
+                  _buildEditableCard('Website', websiteController),
+                  _buildEditableCard('Address', addressController),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(

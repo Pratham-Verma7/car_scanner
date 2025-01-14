@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,26 +10,23 @@ class SavedDetailsScreen extends StatefulWidget {
 }
 
 class _SavedDetailsScreenState extends State<SavedDetailsScreen> {
-  late Map<String, String> savedDetails;
+  late List<Map<String, String>> history;
 
   @override
   void initState() {
     super.initState();
-    _loadDetails();
+    _loadHistory();
   }
 
-  Future<void> _loadDetails() async {
+  Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
+    List<String> storedHistory =
+        prefs.getStringList('businessCardHistory') ?? [];
+
     setState(() {
-      savedDetails = {
-        'Name': prefs.getString('name') ?? 'Not available',
-        'Position': prefs.getString('position') ?? 'Not available',
-        'Company': prefs.getString('company') ?? 'Not available',
-        'Email': prefs.getString('email') ?? 'Not available',
-        'Phone': prefs.getString('phone') ?? 'Not available',
-        'Website': prefs.getString('website') ?? 'Not available',
-        'Address': prefs.getString('address') ?? 'Not available',
-      };
+      history = storedHistory
+          .map((item) => Map<String, String>.from(jsonDecode(item)))
+          .toList();
     });
   }
 
@@ -34,25 +34,30 @@ class _SavedDetailsScreenState extends State<SavedDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Saved Details'),
+        title: Text('Saved Business Cards'),
       ),
-      body: savedDetails == null
-          ? Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: EdgeInsets.all(16),
-              children: savedDetails.entries.map((entry) {
+      body: history.isEmpty
+          ? Center(child: Text('No history available'))
+          : ListView.builder(
+              itemCount: history.length,
+              itemBuilder: (context, index) {
+                final item = history[index];
                 return Card(
-                  margin: EdgeInsets.only(bottom: 16),
-                  elevation: 4,
+                  margin: EdgeInsets.all(8),
                   child: ListTile(
-                    title: Text(
-                      entry.key,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(entry.value),
+                    leading: item['imagePath'] != null
+                        ? Image.file(
+                            File(item['imagePath']!),
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                    title: Text(item['name'] ?? 'Unknown'),
+                    subtitle: Text(item['email'] ?? 'No email'),
                   ),
                 );
-              }).toList(),
+              },
             ),
     );
   }
