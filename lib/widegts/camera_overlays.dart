@@ -22,7 +22,7 @@ class CameraOverlay extends StatelessWidget {
                 left: 0,
                 right: 0,
                 child: Text(
-                  'Align business card within frame',
+                  'Frame the card like a VIP',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,

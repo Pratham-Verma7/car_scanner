@@ -13,7 +13,8 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
   final CameraService _cameraService = CameraService();
-  final TextRecognitionService _textRecognitionService = TextRecognitionService();
+  final TextRecognitionService _textRecognitionService =
+      TextRecognitionService();
   bool _isLoading = false;
 
   @override
@@ -38,7 +39,8 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       final imageFile = await _cameraService.captureAndCrop();
       if (imageFile != null) {
-        final businessCard = await _textRecognitionService.processImage(imageFile);
+        final businessCard =
+            await _textRecognitionService.processImage(imageFile);
         if (!mounted) return;
 
         Navigator.push(
@@ -89,9 +91,7 @@ class _CameraScreenState extends State<CameraScreen> {
             CameraPreview(_cameraService.controller!)
           else
             Center(child: CircularProgressIndicator()),
-
           CameraOverlay(),
-
           if (_isLoading)
             Container(
               color: Colors.black54,
@@ -99,7 +99,6 @@ class _CameraScreenState extends State<CameraScreen> {
                 child: CircularProgressIndicator(color: Colors.white),
               ),
             ),
-
           Positioned(
             bottom: 32,
             left: 0,

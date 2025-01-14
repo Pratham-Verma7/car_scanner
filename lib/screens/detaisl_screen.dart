@@ -20,14 +20,6 @@ class DetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Business Card Details'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              // TODO: Implement edit functionality
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -144,16 +136,16 @@ class DetailsScreen extends StatelessWidget {
   }
 
   Widget _buildDetailItem(
-      BuildContext context,
-      String label,
-      String value,
-      IconData icon, {
-        bool canCopy = false,
-        bool isEmail = false,
-        bool isPhone = false,
-        bool isWebsite = false,
-        List<String> additionalItems = const [],
-      }) {
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon, {
+    bool canCopy = false,
+    bool isEmail = false,
+    bool isPhone = false,
+    bool isWebsite = false,
+    List<String> additionalItems = const [],
+  }) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -168,7 +160,7 @@ class DetailsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: Colors.blue),
+              Icon(icon, size: 20, color: Colors.black),
               SizedBox(width: 8),
               Text(
                 label,
@@ -189,29 +181,29 @@ class DetailsScreen extends StatelessWidget {
             isWebsite: isWebsite,
           ),
           ...additionalItems.map((item) => Padding(
-            padding: EdgeInsets.only(top: 4),
-            child: _buildValueWidget(
-              context,
-              item,
-              canCopy: canCopy,
-              isEmail: isEmail,
-              isPhone: isPhone,
-              isWebsite: isWebsite,
-            ),
-          )),
+                padding: EdgeInsets.only(top: 4),
+                child: _buildValueWidget(
+                  context,
+                  item,
+                  canCopy: canCopy,
+                  isEmail: isEmail,
+                  isPhone: isPhone,
+                  isWebsite: isWebsite,
+                ),
+              )),
         ],
       ),
     );
   }
 
   Widget _buildValueWidget(
-      BuildContext context,
-      String value, {
-        bool canCopy = false,
-        bool isEmail = false,
-        bool isPhone = false,
-        bool isWebsite = false,
-      }) {
+    BuildContext context,
+    String value, {
+    bool canCopy = false,
+    bool isEmail = false,
+    bool isPhone = false,
+    bool isWebsite = false,
+  }) {
     return Row(
       children: [
         Expanded(
@@ -227,9 +219,11 @@ class DetailsScreen extends StatelessWidget {
         if (value.isNotEmpty && (isEmail || isPhone || isWebsite))
           IconButton(
             icon: Icon(
-              isEmail ? Icons.email_outlined :
-              isPhone ? Icons.phone_outlined :
-              Icons.open_in_new,
+              isEmail
+                  ? Icons.email_outlined
+                  : isPhone
+                      ? Icons.phone_outlined
+                      : Icons.open_in_new,
               size: 20,
               color: Colors.blue,
             ),

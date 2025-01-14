@@ -49,8 +49,7 @@ class ReportScreen extends StatelessWidget {
                   label: "Scan NFC tag",
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text("Feature coming soon: Scan NFC tag")),
+                      SnackBar(content: Text("Scan NFC feature coming soon")),
                     );
                   },
                 ),
@@ -61,8 +60,7 @@ class ReportScreen extends StatelessWidget {
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text(
-                              "Feature coming soon: Scan QR code or badge")),
+                          content: Text("Scan QR code feature coming soon")),
                     );
                   },
                 ),
@@ -72,8 +70,7 @@ class ReportScreen extends StatelessWidget {
                   label: "Add manually",
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text("Feature coming soon: Add manually")),
+                      SnackBar(content: Text("Working on that...")),
                     );
                   },
                 ),
@@ -83,7 +80,8 @@ class ReportScreen extends StatelessWidget {
                   label: "LinkedIn",
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Feature coming soon: LinkedIn")),
+                      SnackBar(
+                          content: Text("LinkedIn API Scraping on progress")),
                     );
                   },
                 ),

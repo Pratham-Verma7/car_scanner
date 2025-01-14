@@ -30,13 +30,13 @@ class CameraService {
       ],
       uiSettings: [
         AndroidUiSettings(
-          toolbarTitle: 'Crop Business Card',
-          toolbarColor: Colors.blue,
-          toolbarWidgetColor: Colors.white,
+          toolbarTitle: 'Want to crop?',
+          toolbarColor: Colors.white,
+          toolbarWidgetColor: Colors.black,
           lockAspectRatio: false,
         ),
         IOSUiSettings(
-          title: 'Crop Business Card',
+          title: 'Want to crop?',
         ),
       ],
     );
