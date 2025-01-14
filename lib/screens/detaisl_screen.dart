@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:io';
 import '../models/card.dart';
+import 'dart:io';
+
 import '../services/storage.dart';
 
-
-class DetailsScreen extends StatelessWidget {
+class DetailsScreen extends StatefulWidget {
   final BusinessCard businessCard;
   final File imageFile;
   final bool isFromHistory;
@@ -20,17 +20,90 @@ class DetailsScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _DetailsScreenState createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  late Map<String, String> editableFields;
+  Map<String, bool> editingStates = {};
+  Map<String, TextEditingController> controllers = {};
+  bool hasChanges = false;
+
+  @override
+  void initState() {
+    super.initState();
+    editableFields = {
+      'Name': widget.businessCard.name,
+      'Position': widget.businessCard.position,
+      'Company': widget.businessCard.company,
+      'Email': widget.businessCard.email,
+      'Phone': widget.businessCard.phone,
+      'Website': widget.businessCard.website,
+      'Address': widget.businessCard.address,
+    };
+
+    // Initialize controllers for each field
+    editableFields.forEach((key, value) {
+      controllers[key] = TextEditingController(text: value);
+      editingStates[key] = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    controllers.values.forEach((controller) => controller.dispose());
+    super.dispose();
+  }
+
+  Future<void> saveChanges() async {
+    if (!hasChanges) return;
+
+    try {
+      final updatedCard = BusinessCard(
+        name: controllers['Name']!.text,
+        position: controllers['Position']!.text,
+        company: controllers['Company']!.text,
+        email: controllers['Email']!.text,
+        phone: controllers['Phone']!.text,
+        website: controllers['Website']!.text,
+        address: controllers['Address']!.text,
+        additionalPhones: widget.businessCard.additionalPhones,
+        additionalEmails: widget.businessCard.additionalEmails,
+        imagePath: widget.businessCard.imagePath,
+        dateAdded: widget.businessCard.dateAdded,
+      );
+
+      await widget.storageService.updateBusinessCard(widget.businessCard, updatedCard);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Changes saved successfully')),
+      );
+
+      setState(() {
+        hasChanges = false;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save changes')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Business Card Details'),
         actions: [
-           //if (!isFromHistory)
+         // if (!widget.isFromHistory)
             IconButton(
               icon: Icon(Icons.save),
               onPressed: () async {
                 try {
-                  await storageService.saveBusinessCard(businessCard, imageFile);
+                  await widget.storageService.saveBusinessCard(
+                    widget.businessCard,
+                    widget.imageFile,
+                  );
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Business card saved successfully')),
                   );
@@ -42,13 +115,18 @@ class DetailsScreen extends StatelessWidget {
                 }
               },
             ),
+          if (hasChanges)
+            IconButton(
+              icon: Icon(Icons.check),
+              onPressed: saveChanges,
+            ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             _buildImageSection(),
-            _buildDetailsSection(context),
+            _buildDetailsSection(),
           ],
         ),
       ),
@@ -73,14 +151,14 @@ class DetailsScreen extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Image.file(
-          imageFile,
+          widget.imageFile,
           fit: BoxFit.cover,
         ),
       ),
     );
   }
 
-  Widget _buildDetailsSection(BuildContext context) {
+  Widget _buildDetailsSection() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -95,80 +173,16 @@ class DetailsScreen extends StatelessWidget {
         ],
       ),
       child: Column(
-        children: [
-          _buildDetailItem(
-            context,
-            'Name',
-            businessCard.name,
-            Icons.person,
-            canCopy: true,
-          ),
-          if (businessCard.position.isNotEmpty)
-            _buildDetailItem(
-              context,
-              'Position',
-              businessCard.position,
-              Icons.work,
-              canCopy: true,
-            ),
-          _buildDetailItem(
-            context,
-            'Company',
-            businessCard.company,
-            Icons.business,
-            canCopy: true,
-          ),
-          _buildDetailItem(
-            context,
-            'Email',
-            businessCard.email,
-            Icons.email,
-            canCopy: true,
-            isEmail: true,
-            additionalItems: businessCard.additionalEmails,
-          ),
-          _buildDetailItem(
-            context,
-            'Phone',
-            businessCard.phone,
-            Icons.phone,
-            canCopy: true,
-            isPhone: true,
-            additionalItems: businessCard.additionalPhones,
-          ),
-          if (businessCard.website.isNotEmpty)
-            _buildDetailItem(
-              context,
-              'Website',
-              businessCard.website,
-              Icons.language,
-              canCopy: true,
-              isWebsite: true,
-            ),
-          if (businessCard.address.isNotEmpty)
-            _buildDetailItem(
-              context,
-              'Address',
-              businessCard.address,
-              Icons.location_on,
-              canCopy: true,
-            ),
-        ],
+        children: editableFields.keys.map((field) => _buildEditableField(field)).toList(),
       ),
     );
   }
 
-  Widget _buildDetailItem(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon, {
-    bool canCopy = false,
-    bool isEmail = false,
-    bool isPhone = false,
-    bool isWebsite = false,
-    List<String> additionalItems = const [],
-  }) {
+  Widget _buildEditableField(String field) {
+    final bool isEditing = editingStates[field] ?? false;
+    final controller = controllers[field]!;
+    final IconData fieldIcon = _getFieldIcon(field);
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -183,10 +197,10 @@ class DetailsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: Colors.black),
+              Icon(fieldIcon, size: 20, color: Colors.blue),
               SizedBox(width: 8),
               Text(
-                label,
+                field,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -194,92 +208,90 @@ class DetailsScreen extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 4),
-          _buildValueWidget(
-            context,
-            value,
-            canCopy: canCopy,
-            isEmail: isEmail,
-            isPhone: isPhone,
-            isWebsite: isWebsite,
-          ),
-          ...additionalItems.map((item) => Padding(
-                padding: EdgeInsets.only(top: 4),
-                child: _buildValueWidget(
-                  context,
-                  item,
-                  canCopy: canCopy,
-                  isEmail: isEmail,
-                  isPhone: isPhone,
-                  isWebsite: isWebsite,
+          SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: isEditing
+                    ? TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                    border: UnderlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      hasChanges = true;
+                    });
+                  },
+                )
+                    : Text(
+                  controller.text.isEmpty ? 'Not available' : controller.text,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: controller.text.isEmpty ? Colors.grey : Colors.black87,
+                  ),
                 ),
-              )),
+              ),
+              SizedBox(width: 8),
+              IconButton(
+                icon: Icon(
+                  isEditing ? Icons.check : Icons.edit,
+                  size: 20,
+                  color: Colors.blue,
+                ),
+                onPressed: () {
+                  setState(() {
+                    editingStates[field] = !isEditing;
+                    if (!isEditing) {
+                      // If starting to edit, do nothing
+                    } else {
+                      // If finishing edit, update the field
+                      editableFields[field] = controller.text;
+                      hasChanges = true;
+                    }
+                  });
+                },
+              ),
+              if (controller.text.isNotEmpty && !isEditing)
+                IconButton(
+                  icon: Icon(Icons.copy, size: 20),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: controller.text));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildValueWidget(
-    BuildContext context,
-    String value, {
-    bool canCopy = false,
-    bool isEmail = false,
-    bool isPhone = false,
-    bool isWebsite = false,
-  }) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            value.isEmpty ? 'Not available' : value,
-            style: TextStyle(
-              fontSize: 16,
-              color: value.isEmpty ? Colors.grey : Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        if (value.isNotEmpty && (isEmail || isPhone || isWebsite))
-          IconButton(
-            icon: Icon(
-              isEmail
-                  ? Icons.email_outlined
-                  : isPhone
-                      ? Icons.phone_outlined
-                      : Icons.open_in_new,
-              size: 20,
-              color: Colors.blue,
-            ),
-            onPressed: () {
-              if (isEmail) {
-                _launchURL('mailto:$value');
-              } else if (isPhone) {
-                _launchURL('tel:$value');
-              } else if (isWebsite) {
-                _launchURL(value);
-              }
-            },
-          ),
-        if (value.isNotEmpty && canCopy)
-          IconButton(
-            icon: Icon(Icons.copy, size: 20),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: value));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Copied to clipboard'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-          ),
-      ],
-    );
-  }
-
-  void _launchURL(String url) async {
-    // Implement URL launching using url_launcher package
-    // For this example, we'll just print the URL
-    print('Launching URL: $url');
+  IconData _getFieldIcon(String field) {
+    switch (field) {
+      case 'Name':
+        return Icons.person;
+      case 'Position':
+        return Icons.work;
+      case 'Company':
+        return Icons.business;
+      case 'Email':
+        return Icons.email;
+      case 'Phone':
+        return Icons.phone;
+      case 'Website':
+        return Icons.language;
+      case 'Address':
+        return Icons.location_on;
+      default:
+        return Icons.info;
+    }
   }
 }

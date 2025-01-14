@@ -98,4 +98,11 @@ class StorageService {
       throw Exception('Failed to delete business card');
     }
   }
+  Future<void> updateBusinessCard(BusinessCard oldCard, BusinessCard newCard) async {
+    final box = Hive.box<BusinessCard>(boxName);
+    final index = box.values.toList().indexOf(oldCard);
+    if (index != -1) {
+      await box.putAt(index, newCard);
+    }
+  }
 }
