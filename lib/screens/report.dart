@@ -1,0 +1,156 @@
+import 'package:card_scanner/screens/camer_screen.dart';
+import 'package:flutter/material.dart';
+
+class ReportScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Add Participant"),
+        centerTitle: true,
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Options Grid
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 3,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              padding: const EdgeInsets.all(16),
+              children: [
+                _buildGridOption(
+                  context,
+                  icon: Icons.camera_alt,
+                  label: "Scan business card",
+                  onTap: () {
+                    // Navigate directly to CameraScreen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CameraScreen()),
+                    );
+                  },
+                ),
+                _buildGridOption(
+                  context,
+                  icon: Icons.credit_card,
+                  label: "Scan NFC tag",
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text("Feature coming soon: Scan NFC tag")),
+                    );
+                  },
+                ),
+                _buildGridOption(
+                  context,
+                  icon: Icons.qr_code_scanner,
+                  label: "Scan QR code or badge",
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              "Feature coming soon: Scan QR code or badge")),
+                    );
+                  },
+                ),
+                _buildGridOption(
+                  context,
+                  icon: Icons.edit,
+                  label: "Add manually",
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text("Feature coming soon: Add manually")),
+                    );
+                  },
+                ),
+                _buildGridOption(
+                  context,
+                  icon: Icons.linked_camera,
+                  label: "LinkedIn",
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Feature coming soon: LinkedIn")),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // Footer Section
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.person_add, size: 40, color: Colors.grey),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Add at least one participant",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "At least one participant is required to export this report. Add one by choosing one of the options above.",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGridOption(BuildContext context,
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: InkWell(
+        onTap: onTap, // This adds the clickable effect with ripple
+        borderRadius:
+            BorderRadius.circular(12), // Optional: smooth ripple effect
+        child: Card(
+          color: Colors.white,
+          elevation: 8, // Adjust elevation for shadow intensity
+          shadowColor: Colors.black.withOpacity(0.6), // Customize shadow color
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(12), // Rounded corners for the card
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12), // Padding inside the card
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.transparent,
+                  child: Icon(icon, size: 30, color: Colors.black),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
