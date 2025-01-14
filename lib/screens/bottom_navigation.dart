@@ -40,16 +40,48 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bottom Navigation Example'),
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: Icon(
+            Icons.menu,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            // Your navigation logic, e.g., open a drawer or a side menu
+          },
+        ),
+        title: Align(
+          alignment: Alignment.center, // Centers the title
+          child: Text(
+            'Participants',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.history, // Replace with your desired icon
+              color: Colors.white,
+            ),
+            onPressed: () {
+              // Your logic for the right icon button
+            },
+          ),
+        ],
       ),
+
       body: _pages[_selectedIndex], // Display the selected page
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+            icon: Icon(Icons.note_add),
+            label: 'Report',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.video_library),

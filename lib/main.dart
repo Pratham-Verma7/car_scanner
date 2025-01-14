@@ -1,4 +1,5 @@
 // lib/main.dart
+import 'package:card_scanner/screens/bottom_navigation.dart';
 import 'package:card_scanner/screens/camer_screen.dart';
 import 'package:card_scanner/screens/report.dart';
 
@@ -13,12 +14,8 @@ class BusinessCardScannerApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-        ),
       ),
-      home: ReportScreen(),
+      home: MyApp(),
     );
   }
 }

@@ -5,9 +5,20 @@ class ReportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Add Participant"),
-        centerTitle: true,
+        backgroundColor: Colors.white,
+        title: Align(
+          alignment: Alignment.topLeft, // Centers the title
+          child: Text(
+            "Add Participant",
+            style: TextStyle(
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
