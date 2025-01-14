@@ -1,11 +1,10 @@
+import 'package:card_scanner/screens/SavedDetailsScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
-
 import '../models/card.dart';
 
-class DetailsScreen extends StatelessWidget {
+class DetailsScreen extends StatefulWidget {
   final BusinessCard businessCard;
   final File imageFile;
 
@@ -16,247 +15,129 @@ class DetailsScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Business Card Details'),
+  _DetailsScreenState createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  late TextEditingController nameController;
+  late TextEditingController positionController;
+  late TextEditingController companyController;
+  late TextEditingController emailController;
+  late TextEditingController phoneController;
+  late TextEditingController websiteController;
+  late TextEditingController addressController;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.businessCard.name);
+    positionController =
+        TextEditingController(text: widget.businessCard.position);
+    companyController =
+        TextEditingController(text: widget.businessCard.company);
+    emailController = TextEditingController(text: widget.businessCard.email);
+    phoneController = TextEditingController(text: widget.businessCard.phone);
+    websiteController =
+        TextEditingController(text: widget.businessCard.website);
+    addressController =
+        TextEditingController(text: widget.businessCard.address);
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    positionController.dispose();
+    companyController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    websiteController.dispose();
+    addressController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('name', nameController.text);
+    await prefs.setString('position', positionController.text);
+    await prefs.setString('company', companyController.text);
+    await prefs.setString('email', emailController.text);
+    await prefs.setString('phone', phoneController.text);
+    await prefs.setString('website', websiteController.text);
+    await prefs.setString('address', addressController.text);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SavedDetailsScreen()),
+    );
+  }
+
+  Widget _buildEditableCard(String label, TextEditingController controller) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      body: SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildImageSection(),
-            _buildDetailsSection(context),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            TextFormField(
+              controller: controller,
+              style: TextStyle(fontSize: 16, color: Colors.black87),
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+              ),
+              minLines: 1,
+              maxLines: null, // Expands to fit the content
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImageSection() {
-    return Container(
-      width: double.infinity,
-      height: 200,
-      margin: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Business Card Details'),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.file(
-          imageFile,
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailsSection(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildDetailItem(
-            context,
-            'Name',
-            businessCard.name,
-            Icons.person,
-            canCopy: true,
-          ),
-          if (businessCard.position.isNotEmpty)
-            _buildDetailItem(
-              context,
-              'Position',
-              businessCard.position,
-              Icons.work,
-              canCopy: true,
-            ),
-          _buildDetailItem(
-            context,
-            'Company',
-            businessCard.company,
-            Icons.business,
-            canCopy: true,
-          ),
-          _buildDetailItem(
-            context,
-            'Email',
-            businessCard.email,
-            Icons.email,
-            canCopy: true,
-            isEmail: true,
-            additionalItems: businessCard.additionalEmails,
-          ),
-          _buildDetailItem(
-            context,
-            'Phone',
-            businessCard.phone,
-            Icons.phone,
-            canCopy: true,
-            isPhone: true,
-            additionalItems: businessCard.additionalPhones,
-          ),
-          if (businessCard.website.isNotEmpty)
-            _buildDetailItem(
-              context,
-              'Website',
-              businessCard.website,
-              Icons.language,
-              canCopy: true,
-              isWebsite: true,
-            ),
-          if (businessCard.address.isNotEmpty)
-            _buildDetailItem(
-              context,
-              'Address',
-              businessCard.address,
-              Icons.location_on,
-              canCopy: true,
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailItem(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon, {
-    bool canCopy = false,
-    bool isEmail = false,
-    bool isPhone = false,
-    bool isWebsite = false,
-    List<String> additionalItems = const [],
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey.withOpacity(0.2),
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Icon(icon, size: 20, color: Colors.black),
-              SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
+              _buildEditableCard('Name', nameController),
+              _buildEditableCard('Position', positionController),
+              _buildEditableCard('Company', companyController),
+              _buildEditableCard('Email', emailController),
+              _buildEditableCard('Phone', phoneController),
+              _buildEditableCard('Website', websiteController),
+              _buildEditableCard('Address', addressController),
             ],
           ),
-          SizedBox(height: 4),
-          _buildValueWidget(
-            context,
-            value,
-            canCopy: canCopy,
-            isEmail: isEmail,
-            isPhone: isPhone,
-            isWebsite: isWebsite,
-          ),
-          ...additionalItems.map((item) => Padding(
-                padding: EdgeInsets.only(top: 4),
-                child: _buildValueWidget(
-                  context,
-                  item,
-                  canCopy: canCopy,
-                  isEmail: isEmail,
-                  isPhone: isPhone,
-                  isWebsite: isWebsite,
-                ),
-              )),
-        ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _saveDetails,
+        label: Text('Save'),
+        icon: Icon(Icons.save),
       ),
     );
-  }
-
-  Widget _buildValueWidget(
-    BuildContext context,
-    String value, {
-    bool canCopy = false,
-    bool isEmail = false,
-    bool isPhone = false,
-    bool isWebsite = false,
-  }) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            value.isEmpty ? 'Not available' : value,
-            style: TextStyle(
-              fontSize: 16,
-              color: value.isEmpty ? Colors.grey : Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        if (value.isNotEmpty && (isEmail || isPhone || isWebsite))
-          IconButton(
-            icon: Icon(
-              isEmail
-                  ? Icons.email_outlined
-                  : isPhone
-                      ? Icons.phone_outlined
-                      : Icons.open_in_new,
-              size: 20,
-              color: Colors.blue,
-            ),
-            onPressed: () {
-              if (isEmail) {
-                _launchURL('mailto:$value');
-              } else if (isPhone) {
-                _launchURL('tel:$value');
-              } else if (isWebsite) {
-                _launchURL(value);
-              }
-            },
-          ),
-        if (value.isNotEmpty && canCopy)
-          IconButton(
-            icon: Icon(Icons.copy, size: 20),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: value));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Copied to clipboard'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-          ),
-      ],
-    );
-  }
-
-  void _launchURL(String url) async {
-    // Implement URL launching using url_launcher package
-    // For this example, we'll just print the URL
-    print('Launching URL: $url');
   }
 }

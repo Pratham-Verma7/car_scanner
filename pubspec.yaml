@@ -42,6 +42,7 @@ dependencies:
   image_cropper: ^3.0.1 # To crop the image
   cropper: ^0.5.3
   path_provider: ^2.0.11 # To save files temporarily
+  shared_preferences: ^2.0.15
 
 dev_dependencies:
   flutter_test:
